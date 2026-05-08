@@ -1,0 +1,26 @@
+# Dependencies
+ecommerce-frontend/node_modules/
+ecommerce-backend/node_modules/
+
+# Next.js build
+ecommerce-frontend/.next/
+ecommerce-frontend/out/
+
+# Environment variables (مهم جداً!)
+ecommerce-backend/.env
+ecommerce-frontend/.env
+ecommerce-frontend/.env.local
+ecommerce-frontend/.env.production
+
+# Logs
+ecommerce-backend/logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

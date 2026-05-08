@@ -32,6 +32,21 @@ exports.updateUser  = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+// بعد exports.updateUser
+exports.deleteUser = async (req, res, next) => {
+  try {
+    await User.findByIdAndDelete(req.params.id)
+    res.json({ message: "User deleted" })
+  } catch (err) { next(err) }
+}
+
+// Add Product (admin)
+exports.createProduct = async (req, res, next) => {
+  try {
+    const product = await Product.create({ ...req.body, seller: req.user._id, isActive: true })
+    res.status(201).json({ product })
+  } catch (err) { next(err) }
+}
 // Products
 exports.getProducts    = async (req, res, next) => {
   try {

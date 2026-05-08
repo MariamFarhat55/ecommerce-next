@@ -10,6 +10,12 @@ const ROLE_STYLE = {
   admin:    { background: "rgba(139,92,246,0.1)",  color: "#7C3AED" },
 }
 
+const IconTrash = () => (
+  <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+  </svg>
+)
+
 export default function AdminUsersPage() {
   const [users, setUsers]     = useState([])
   const [loading, setLoading] = useState(true)
@@ -27,6 +33,15 @@ export default function AdminUsersPage() {
       setUsers(prev => prev.map(u => u._id === id ? { ...u, active: !active } : u))
       toast.success(active ? "User restricted" : "User approved")
     } catch { toast.error("Failed to update user") }
+  }
+
+  const deleteUser = async (id, name) => {
+    if (!confirm(`Delete user "${name}"? This cannot be undone.`)) return
+    try {
+      await api.delete(`/admin/users/${id}`)
+      setUsers(prev => prev.filter(u => u._id !== id))
+      toast.success("User deleted")
+    } catch { toast.error("Failed to delete user") }
   }
 
   if (loading) return <LoadingSpinner />
@@ -48,11 +63,14 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody>
-            {users.map((u, i) => (
+            {users.length === 0 ? (
+              <tr><td colSpan={6} style={{ padding: 48, textAlign: "center", color: "var(--text2)", fontSize: 14 }}>No users found</td></tr>
+            ) : users.map((u, i) => (
               <tr key={u._id}
                 style={{ borderBottom: i < users.length - 1 ? "1px solid var(--border)" : "none", transition: "background 0.15s" }}
                 onMouseEnter={e => e.currentTarget.style.background = "var(--bg3)"}
                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+
                 <td style={{ padding: "14px 20px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--accent)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>
@@ -78,15 +96,31 @@ export default function AdminUsersPage() {
                   </span>
                 </td>
                 <td style={{ padding: "14px 20px" }}>
-                  <button onClick={() => toggleStatus(u._id, u.active)}
-                    style={{
-                      padding: "7px 14px", borderRadius: 8, border: `1px solid ${u.active ? "rgba(239,68,68,0.2)" : "rgba(22,163,74,0.2)"}`,
-                      background: u.active ? "rgba(239,68,68,0.05)" : "rgba(22,163,74,0.05)",
-                      cursor: "pointer", fontSize: 13, fontFamily: "'Inter',sans-serif",
-                      color: u.active ? "#EF4444" : "#16A34A", transition: "all 0.15s",
-                    }}>
-                    {u.active ? "Restrict" : "Approve"}
-                  </button>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {/* Approve / Restrict */}
+                    <button onClick={() => toggleStatus(u._id, u.active)}
+                      style={{
+                        padding: "7px 14px", borderRadius: 8,
+                        border: `1px solid ${u.active ? "rgba(239,68,68,0.2)" : "rgba(22,163,74,0.2)"}`,
+                        background: u.active ? "rgba(239,68,68,0.05)" : "rgba(22,163,74,0.05)",
+                        cursor: "pointer", fontSize: 13, fontFamily: "'Inter',sans-serif",
+                        color: u.active ? "#EF4444" : "#16A34A", transition: "all 0.15s",
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = "0.8"}
+                      onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
+                      {u.active ? "Restrict" : "Approve"}
+                    </button>
+
+                    {/* Delete — مش بيحذف الـ admin نفسه */}
+                    {u.role !== "admin" && (
+                      <button onClick={() => deleteUser(u._id, u.name)}
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.05)", cursor: "pointer", fontSize: 13, color: "#EF4444", fontFamily: "'Inter',sans-serif", transition: "all 0.15s" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.1)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "rgba(239,68,68,0.05)"}>
+                        <IconTrash /> Delete
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
